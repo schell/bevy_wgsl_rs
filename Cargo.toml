@@ -13,7 +13,7 @@ rust-version = "1.95.0"
 
 [dependencies]
 bevy_wgsl_rs_macros = {path = "crates/bevy_wgsl_rs_macros"}
-bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-features = false, features = ["bevy_asset"]}
+bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-features = false, features = ["bevy_asset", "bevy_shader"]}
 wgsl-rs = { git="https://github.com/schell/wgsl-rs.git", branch = "feat/generics" }
 
 [dev-dependencies]

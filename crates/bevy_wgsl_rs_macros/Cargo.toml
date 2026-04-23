@@ -1,0 +1,11 @@
+[package]
+name = "bevy_wgsl_rs_macros"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+syn = { version = "2.0.117", features = ["full"] }
+quote = "1.0.45"
+
+[lib]
+proc-macro = true

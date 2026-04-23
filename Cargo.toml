@@ -1,0 +1,25 @@
+[package]
+name = "bevy_wgsl_rs"
+version = "0.1.0"
+edition = "2024"
+categories = ["game-engines", "graphics", "gui", "rendering"]
+description = "Macros and functions to support the use of wgsl-rs in the bevy game engine"
+exclude = [".github/", "crates/"]
+keywords = ["game", "engine", "gamedev", "graphics", "bevy"]
+license = "MIT"
+repository = "https://github.com/ncthbrt/bevy_wgsl_rs"
+rust-version = "1.95.0"
+
+
+[dependencies]
+bevy_wgsl_rs_macros = {path = "crates/bevy_wgsl_rs_macros"}
+bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-features = false, features = ["bevy_asset"]}
+wgsl-rs = { git="https://github.com/schell/wgsl-rs.git", branch = "feat/generics" }
+
+[dev-dependencies]
+tokio = { version = "1.52.1", features = ["rt", "macros"]}
+wgsl-rs = { git = "https://github.com/schell/wgsl-rs/", branch = "feat/generics"}
+
+[workspace]
+resolver = "3"
+members = ["crates/*"]

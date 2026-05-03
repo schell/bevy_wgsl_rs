@@ -1,84 +1,26 @@
 use proc_macro::TokenStream;
 use quote::ToTokens;
-use syn::punctuated::Punctuated;
+use syn::ItemMod;
 use syn::spanned::Spanned;
-use syn::{
-    AttrStyle, Attribute, Expr, Ident, ItemMod, Lifetime, Macro, MacroDelimiter, Meta, Path,
-    PathSegment, Token, Type, TypePath, TypeReference, Visibility,
-};
 
 #[proc_macro_attribute]
 pub fn bevy_wgsl(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut ast: ItemMod = syn::parse(input).unwrap();
     let ast_span = ast.span();
-    let mut wgsl_rs_path: Punctuated<PathSegment, Token![::]> = Punctuated::new();
-    wgsl_rs_path.push(PathSegment {
-        ident: Ident::new("wgsl_rs", ast_span),
-        arguments: Default::default(),
-    });
-    wgsl_rs_path.push(PathSegment {
-        ident: Ident::new("wgsl", ast_span),
-        arguments: Default::default(),
-    });
     if let Some(contents) = ast.content.as_mut() {
-        let mut module_path_path: Punctuated<PathSegment, Token![::]> = Punctuated::new();
-        module_path_path.push(PathSegment {
-            ident: Ident::new("module_path", ast_span),
-            arguments: Default::default(),
-        });
-        let mut str_path: Punctuated<PathSegment, Token![::]> = Punctuated::new();
-        str_path.push(PathSegment {
-            ident: Ident::new("str", ast_span),
-            arguments: Default::default(),
-        });
-        let module_path: syn::ItemConst = syn::ItemConst {
-            attrs: vec![],
-            vis: Visibility::Public(Default::default()),
-            const_token: Default::default(),
-            ident: Ident::new("MODULE_PATH", ast_span),
-            generics: Default::default(),
-            colon_token: Default::default(),
-            ty: Box::new(Type::Reference(TypeReference {
-                and_token: Default::default(),
-                lifetime: Some(Lifetime {
-                    apostrophe: ast_span,
-                    ident: Ident::new("static", ast_span),
-                }),
-                mutability: None,
-                elem: Box::new(Type::Path(TypePath {
-                    qself: None,
-                    path: Path {
-                        leading_colon: None,
-                        segments: str_path,
-                    },
-                })),
-            })),
-            eq_token: Default::default(),
-            expr: Box::new(Expr::Macro(syn::ExprMacro {
-                attrs: vec![],
-                mac: Macro {
-                    path: Path {
-                        leading_colon: None,
-                        segments: module_path_path,
-                    },
-                    bang_token: Default::default(),
-                    delimiter: MacroDelimiter::Paren(Default::default()),
-                    tokens: Default::default(),
-                },
-            })),
-            semi_token: Default::default(),
+        let const_tokens = quote::quote_spanned! { ast_span =>
+            #[wgsl_ignore]
+            pub const MODULE_PATH: &str = module_path!();
         };
-        contents.1.push(syn::Item::Const(module_path));
+        let module_path_const: syn::ItemConst = syn::parse2(const_tokens).unwrap();
+        contents.1.push(syn::Item::Const(module_path_const));
     }
 
-    ast.attrs.push(Attribute {
-        pound_token: Default::default(),
-        style: AttrStyle::Outer,
-        bracket_token: Default::default(),
-        meta: Meta::Path(Path {
-            leading_colon: None,
-            segments: wgsl_rs_path,
-        }),
-    });
+    let attr_tokens = quote::quote_spanned! { ast_span =>
+        #[wgsl_rs::wgsl]
+    };
+    let parsed_attrs =
+        syn::parse::Parser::parse2(syn::Attribute::parse_outer, attr_tokens).unwrap();
+    ast.attrs.extend(parsed_attrs);
     ast.to_token_stream().into()
 }
